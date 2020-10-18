@@ -1,2 +1,3 @@
 /docker/database/data/*
 /docker/logs/nginx/*
+/docker/rabbitmq/data
