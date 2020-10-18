@@ -1,0 +1,12 @@
+default:
+  suites:
+    default:
+        paths: ["%paths.base%/features"]
+        contexts:
+          - Imbo\BehatApiExtension\Context\ApiContext
+  extensions:
+    Imbo\BehatApiExtension:
+      apiClient:
+        base_uri: http://docker_nginx_1
+        timeout: 5.0
+#        verify: false
