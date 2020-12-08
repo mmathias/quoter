@@ -57,14 +57,14 @@ class QuoteFinder
     {
         $quotes = $this->client->lRange($authorName, 0, -1);
         if (empty($quotes)) {
-            var_dump('Did not find in REDIS');
             $author = $this->authorRepository->findOneBy(["name" => $authorName]);
-            $quotes = $author->getQuotes()->getValues();
+            if (!$author) {
+                throw new AuthorNotFoundException('Author not found.');
+            }
+            $quotes = array_map(function ($quote) {
+                return $quote->getQuote();
+            }, $author->getQuotes()->getValues());
             $this->storeInRedis($authorName, $quotes);
-        }
-
-        if (!$quotes) {
-            throw new AuthorNotFoundException('Author not found.');
         }
 
         return $quotes;
@@ -93,7 +93,6 @@ class QuoteFinder
 
     private function storeInRedis(string $authorName, array $quotes)
     {
-        var_dump('oi');
         $this->bus->dispatch(new QuoteRequestDTO($authorName, $quotes));
     }
 }
