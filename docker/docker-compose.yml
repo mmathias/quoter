@@ -58,7 +58,6 @@ services:
       - DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PASSWORD}@database:3306/${DATABASE_NAME}?serverVersion=mariadb-10.4.11
     volumes:
       - ../src:/var/www
-      - ./php-consumer/message-consumer.sh:/var/www/message-consumer.sh
 
   nginx:
     build:
