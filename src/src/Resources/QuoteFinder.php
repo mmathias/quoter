@@ -5,6 +5,7 @@ namespace App\Resources;
 
 use App\Message\QuoteRequestDTO;
 use App\Repository\AuthorRepository;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Messenger\MessageBusInterface;
 use SymfonyBundles\RedisBundle\Redis\ClientInterface;
 
@@ -40,48 +41,42 @@ class QuoteFinder
     public function findShoutedQuotesByActorWithLimit(string $author, int $limit): array
     {
         $this->validateLimit($limit);
-        $quotes = $this->getQuotes($author);
 
-        if (empty($quotes)) {
-            return [];
-        }
-
-        return $this->getShoutedQuotes(array_slice($quotes, 0, $limit));
+        return $this->getQuotes($author, $limit);
     }
 
     /**
      * @param string $authorName
+     * @param int $limit
      * @return array
      */
-    private function getQuotes(string $authorName): array
+    private function getQuotes(string $authorName, int $limit): array
     {
-        $quotes = $this->client->lRange($authorName, 0, -1);
-        if (empty($quotes)) {
+        $shoutedQuotes = $this->client->lRange($authorName, 0, -1);
+        if (empty($shoutedQuotes)) {
             $author = $this->authorRepository->findOneBy(["name" => $authorName]);
             if (!$author) {
                 throw new AuthorNotFoundException('Author not found.');
             }
-            $quotes = array_map(function ($quote) {
-                return $quote->getQuote();
-            }, $author->getQuotes()->getValues());
-            $this->storeInRedis($authorName, $quotes);
+
+            $shoutedQuotes = $this->getShoutedQuotes($author->getQuotes());
+            $this->storeInRedis($authorName, $shoutedQuotes);
         }
 
-        return $quotes;
+        return array_slice($shoutedQuotes, 0, $limit);
     }
 
     /**
-     * @param array $quotes
+     * @param Collection $quotes
      * @return array
      */
-    private function getShoutedQuotes(array $quotes): array
+    private function getShoutedQuotes(Collection $quotes): array
     {
-        $shoutedQuotes = [];
-        foreach ($quotes as $quote) {
-            $shoutedQuotes[] = strtoupper($quote) . '!';
-        }
-
-        return $shoutedQuotes;
+        return $quotes->map(
+            function($quote) {
+                return strtoupper($quote) . '!';
+            }
+        )->getValues();
     }
 
     private function validateLimit(int $limit)

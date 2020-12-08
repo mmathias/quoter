@@ -10,6 +10,8 @@ use SymfonyBundles\RedisBundle\Redis\ClientInterface;
 
 class QuoterRequestHandler implements MessageHandlerInterface
 {
+    const TIMEOUT_IN_SECONDS = 60;
+
     /**
      * @var ClientInterface
      */
@@ -25,7 +27,11 @@ class QuoterRequestHandler implements MessageHandlerInterface
     }
 
     public function __invoke(QuoteRequestDTO $quoteRequestDTO) {
-        $this->redisClient->lpush($quoteRequestDTO->getAuthorName(), $quoteRequestDTO->getQuotes());
+        $authorName = $quoteRequestDTO->getAuthorName();
+
+        $this->redisClient->lpush($authorName, $quoteRequestDTO->getQuotes());
+
+        $this->redisClient->expire($authorName, self::TIMEOUT_IN_SECONDS);
     }
 
 }

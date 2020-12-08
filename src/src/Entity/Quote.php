@@ -58,6 +58,6 @@ class Quote
 
     public function __toString()
     {
-        return 'Quote: ' . $this->getQuote();
+        return $this->getQuote();
     }
 }

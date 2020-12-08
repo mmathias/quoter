@@ -43,7 +43,5 @@ Tests are covered using PHPSpec for the unit and integration tests and Behat for
 
 
 ## TODO
-- Add unit tests for the logic when there is info in REDIS
 - Add a second consumer
 - Check parallelism possible problem from adding a second consumer
-- Add expiry date to REDIS

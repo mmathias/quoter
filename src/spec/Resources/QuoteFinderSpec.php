@@ -30,6 +30,7 @@ class QuoteFinderSpec extends ObjectBehavior
 
         $quotes->shouldBeArray();
         $quotes->shouldHaveCount(1);
+        $quotes[0]->shouldBe('BE OR NOT BE!');
     }
 
     function it_should_return_an_exception_when_author_does_not_exist(AuthorRepository $authorRepository) {
@@ -71,6 +72,20 @@ class QuoteFinderSpec extends ObjectBehavior
             ->during('findShoutedQuotesByActorWithLimit', [$authorName, $limit]);
     }
 
+    function it_should_return_from_cache_if_author_exists(AuthorRepository $authorRepository, ClientInterface $redisClient, MessageBusInterface $queueClient) {
+        $authorName = "steve";
+        $limit = 1;
+        $author = $this->createAuthorMock($authorName, true);
+        $authorRepository->findBy((array)Argument::any())->shouldNotBeCalled();
+        $redisClient->lrange($authorName, 0, -1)->willReturn($author->getQuotes()->getValues());
+        $queueClient->dispatch(Argument::any())->willReturn(new Envelope((object)[]));
+
+        $quotes = $this->findShoutedQuotesByActorWithLimit($authorName, $limit);
+
+        $quotes->shouldBeArray();
+        $quotes->shouldHaveCount(1);
+    }
+
     /**
      * @param AuthorRepository $authorRepository
      * @param string $authorName
@@ -78,6 +93,20 @@ class QuoteFinderSpec extends ObjectBehavior
      * @return Author
      */
     private function mockAuthor(AuthorRepository $authorRepository, string $authorName, bool $withQuotes = true): Author
+    {
+        $author = $this->createAuthorMock($authorName, $withQuotes);
+
+        $authorRepository->findOneBy(["name"=> $authorName])->willReturn($author);
+
+        return $author;
+    }
+
+    /**
+     * @param string $authorName
+     * @param bool $withQuotes
+     * @return Author
+     */
+    private function createAuthorMock(string $authorName, bool $withQuotes): Author
     {
         $author = new Author();
         $author->setName($authorName);
@@ -90,9 +119,6 @@ class QuoteFinderSpec extends ObjectBehavior
         if ($withQuotes) {
             $author->setQuotes(new ArrayCollection([$quote1, $quote2]));
         }
-
-        $authorRepository->findOneBy(["name"=> $authorName])->willReturn($author);
-
         return $author;
     }
 }
