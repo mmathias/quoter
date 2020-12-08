@@ -1,0 +1,5 @@
+sb_redis:
+  clients:
+    default:
+      $options:    []
+      $parameters: ['tcp://redis:6379?database=0']

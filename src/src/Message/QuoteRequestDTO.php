@@ -9,36 +9,37 @@ class QuoteRequestDTO
     /**
      * @var string
      */
-    private $author;
+    private $authorName;
     /**
-     * @var int
+     * @var array
      */
-    private $limit;
+    private $quotes;
 
     /**
      * QuoteRequestDTO constructor.
-     * @param string $author
-     * @param int $limit
+     * @param string $authorName
+     * @param array $quotes
      */
-    public function __construct(string $author, int $limit)
+    public function __construct(string $authorName, array $quotes)
     {
-        $this->author = $author;
-        $this->limit = $limit;
+        $this->authorName = $authorName;
+        $this->quotes = $quotes;
     }
 
     /**
      * @return string
      */
-    public function getAuthor(): string
+    public function getAuthorName(): string
     {
-        return $this->author;
+        return $this->authorName;
     }
 
     /**
-     * @return int
+     * @return array
      */
-    public function getLimit(): int
+    public function getQuotes(): array
     {
-        return $this->limit;
+        return $this->quotes;
     }
+
 }
