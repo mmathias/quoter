@@ -2,3 +2,5 @@ var/cache
 var/log
 vendor
 .idea
+supervisord.log
+supervisord.pid

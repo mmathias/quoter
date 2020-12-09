@@ -43,5 +43,4 @@ Tests are covered using PHPSpec for the unit and integration tests and Behat for
 
 
 ## TODO
-- Add a second consumer
 - Check parallelism possible problem from adding a second consumer
