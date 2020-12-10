@@ -77,7 +77,7 @@ class QuoteFinderSpec extends ObjectBehavior
         $limit = 1;
         $author = $this->createAuthorMock($authorName, true);
         $authorRepository->findBy((array)Argument::any())->shouldNotBeCalled();
-        $redisClient->lrange($authorName, 0, -1)->willReturn($author->getQuotes()->getValues());
+        $redisClient->lRange($authorName, 0, $limit)->willReturn($author->getQuotes()->getValues());
         $queueClient->dispatch(Argument::any())->willReturn(new Envelope((object)[]));
 
         $quotes = $this->findShoutedQuotesByActorWithLimit($authorName, $limit);
