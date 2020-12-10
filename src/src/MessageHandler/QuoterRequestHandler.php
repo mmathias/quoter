@@ -29,8 +29,7 @@ class QuoterRequestHandler implements MessageHandlerInterface
     public function __invoke(QuoteRequestDTO $quoteRequestDTO) {
         $authorName = $quoteRequestDTO->getAuthorName();
 
-        $this->redisClient->lpush($authorName, $quoteRequestDTO->getQuotes());
-
+        $this->redisClient->rpush($authorName, $quoteRequestDTO->getQuotes());
         $this->redisClient->expire($authorName, self::TIMEOUT_IN_SECONDS);
     }
 

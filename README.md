@@ -40,7 +40,3 @@ Tests are covered using PHPSpec for the unit and integration tests and Behat for
 - PHP-FPM
 - NGINX
 - 2x RabbitMQ consumers to write to Redis
-
-
-## TODO
-- Check parallelism possible problem from adding a second consumer

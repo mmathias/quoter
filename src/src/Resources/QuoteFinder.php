@@ -31,6 +31,7 @@ class QuoteFinder
      * QuoteFinder constructor.
      * @param AuthorRepository $authorRepository
      * @param ClientInterface $client
+     * @param MessageBusInterface $bus
      */
     public function __construct(AuthorRepository $authorRepository, ClientInterface $client, MessageBusInterface $bus) {
         $this->authorRepository = $authorRepository;
@@ -52,14 +53,14 @@ class QuoteFinder
      */
     private function getQuotes(string $authorName, int $limit): array
     {
-        $shoutedQuotes = $this->client->lRange($authorName, 0, -1);
+        $shoutedQuotes = $this->client->lRange($authorName, 0, $limit);
         if (empty($shoutedQuotes)) {
             $author = $this->authorRepository->findOneBy(["name" => $authorName]);
             if (!$author) {
                 throw new AuthorNotFoundException('Author not found.');
             }
 
-            $shoutedQuotes = $this->getShoutedQuotes($author->getQuotes());
+            $shoutedQuotes = $this->getShoutedQuotes($author->getQuotes()->getValues());
             $this->storeInRedis($authorName, $shoutedQuotes);
         }
 
@@ -67,16 +68,17 @@ class QuoteFinder
     }
 
     /**
-     * @param Collection $quotes
+     * @param array $quotes
      * @return array
      */
-    private function getShoutedQuotes(Collection $quotes): array
+    private function getShoutedQuotes(array $quotes): array
     {
-        return $quotes->map(
-            function($quote) {
-                return strtoupper($quote) . '!';
-            }
-        )->getValues();
+        $shoutedQuotes = [];
+        foreach ($quotes as $quote) {
+            $shoutedQuotes[] = strtoupper($quote) . '!';
+        }
+
+        return $shoutedQuotes;
     }
 
     private function validateLimit(int $limit)
